@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "645862599030",
+    "project_id": "gautam-power",
+    "storage_bucket": "gautam-power.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:645862599030:android:28c3bd606439c4192eb257",
+        "android_client_info": {
+          "package_name": "com.gautamviradiya.gpower"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "645862599030-la8nomhut4503jatnlv795sh9tcafqtb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaXVvxt9VHhQ9-y8EUR4OJttct367cXtE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "645862599030-la8nomhut4503jatnlv795sh9tcafqtb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            android:innerRadius="154dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#0300FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="148dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#0500FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="142dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+
+            <solid android:color="#0800FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="136dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#0A00FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="130dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#0D00FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="124dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#0F00FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="118dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#1200FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="112dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#1400FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="106dp"
+            android:shape="ring"
+            android:thickness="6dp"
+            android:useLevel="false">
+            <solid android:color="#1700FF66" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:innerRadius="100dp"
+            android:shape="ring"
+            android:thickness="0dp"
+            android:useLevel="false">
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

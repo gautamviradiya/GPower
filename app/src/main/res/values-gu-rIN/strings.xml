@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">જીપાવર</string>
+    <string name="power_status">પાવર છે કે નહિ</string>
+    <string name="day_or_night">પાવર દિવસ નો છે કે રાતનો</string>
+    <string name="remaining_power">બાકી પાવર</string>
+    <string name="cut_power">કાપેલ પાવર</string>
+    <string name="alert_me">એલાર્મ સંદેશ</string>
+    <string name="when_power_on">પાવર આવે ત્યારે</string>
+    <string name="when_power_off">પાવર જાય ત્યારે</string>
+    <string name="settings">સેટિંગ્સ</string>
+</resources>

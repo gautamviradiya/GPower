@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="10dp"
+    android:background="@android:color/white">
+
+    <com.gautamviradiya.gpower.PowerClock
+        android:id="@+id/power_clock"
+        android:layout_marginTop="16dp"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:background="@drawable/ic_clock"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/app_name"
+        android:textColor="#707070"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/settings"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/ripple_settings"
+        android:padding="5dp"
+        android:src="@drawable/ic_settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/lamp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="@string/power_status"
+        android:src="@drawable/ic_lamp_off"
+        app:layout_constraintBottom_toBottomOf="@+id/power_clock"
+        app:layout_constraintEnd_toEndOf="@+id/power_clock" />
+
+    <ImageView
+        android:id="@+id/day_night"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="@string/day_or_night"
+        android:src="@drawable/ic_day"
+        app:layout_constraintBottom_toBottomOf="@+id/power_clock"
+        app:layout_constraintStart_toStartOf="@+id/power_clock" />
+
+    <TextView
+        android:id="@+id/remaining_power"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/ic_remaining_power"
+        android:gravity="center"
+        android:paddingTop="28dp"
+        android:paddingBottom="24dp"
+        android:text="04:00 કલાક"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/cut_power"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/power_clock" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/remaining_power"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="@+id/remaining_power"
+        app:layout_constraintHorizontal_bias="0.30"
+        app:layout_constraintStart_toStartOf="@+id/remaining_power"
+        app:layout_constraintTop_toTopOf="@+id/remaining_power" />
+
+    <TextView
+        android:id="@+id/cut_power"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/ic_cut_power"
+        android:gravity="center"
+        android:paddingTop="28dp"
+        android:paddingBottom="24dp"
+        android:text="01:07 કલાક"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/remaining_power"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/remaining_power"
+        app:layout_constraintTop_toTopOf="@+id/remaining_power" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/cut_power"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="@+id/cut_power"
+        app:layout_constraintHorizontal_bias="0.30"
+        app:layout_constraintStart_toStartOf="@+id/cut_power"
+        app:layout_constraintTop_toTopOf="@+id/cut_power" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/alertcard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="@+id/cut_power"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/remaining_power"
+        app:layout_constraintTop_toBottomOf="@+id/remaining_power"
+        app:strokeColor="#E1E1E1"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_notification" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/alert_me"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/check_box_power_on"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/when_power_on" />
+
+            <CheckBox
+                android:id="@+id/check_box_power_off"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/when_power_off" />
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+<!--banner testing id: ca-app-pub-3940256099942544/6300978111-->
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/banner_ad"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

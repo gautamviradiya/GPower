@@ -1,0 +1,8 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="GPower" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#0085FF</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="colorAccent">#39A0FF</item>
+    </style>
+</resources>

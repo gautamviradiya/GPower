@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">GPower</string>
+    <string name="power_status">Power Status</string>
+    <string name="day_or_night">day or night</string>
+    <string name="remaining_power">Power left</string>
+    <string name="cut_power">Power cut</string>
+    <string name="alert_me">Alert me</string>
+    <string name="when_power_on">When power ON</string>
+    <string name="when_power_off">When power OFF</string>
+    <string name="settings">Settings</string>
+</resources>
