@@ -58,9 +58,10 @@ public class PowerClock extends View {
         hourHandPaint.setAntiAlias(true);
         hourHandPaint.setStrokeWidth(5);
         hourHandPaint.setStrokeCap(Paint.Cap.ROUND);
+
         //8 hour arc
         eightHourPaint.setAntiAlias(true);
-        eightHourPaint.setStrokeWidth(4);
+        eightHourPaint.setStrokeWidth(16);
         eightHourPaint.setColor(Color.parseColor("#BEBEBE"));
         eightHourPaint.setStrokeCap(Paint.Cap.ROUND);
         eightHourPaint.setStyle(Paint.Style.STROKE);

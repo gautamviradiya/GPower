@@ -1,11 +1,15 @@
 package com.gautamviradiya.gpower;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.widget.CheckBox;
@@ -15,6 +19,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -55,10 +61,20 @@ public class MainActivity extends AppCompatActivity {
         AdRequest mainBannerAdRequest = new AdRequest.Builder().build();
         bannerAd.loadAd(mainBannerAdRequest);
 
-
         //textToSpeech = new TextToSpeech(this, this);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+                Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                startActivity(intent);
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
+            }
+        }
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

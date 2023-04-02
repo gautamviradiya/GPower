@@ -8,4 +8,5 @@
     <string name="when_power_on">When power ON</string>
     <string name="when_power_off">When power OFF</string>
     <string name="settings">Settings</string>
+    <string name="default_notification_channel_id">message</string>
 </resources>

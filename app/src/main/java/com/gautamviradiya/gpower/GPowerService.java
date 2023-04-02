@@ -1,18 +1,15 @@
 package com.gautamviradiya.gpower;
 
-import android.app.AlarmManager;
-import android.app.KeyguardManager;
-import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -23,10 +20,9 @@ public class GPowerService extends FirebaseMessagingService {
     //private static final String TAG = "GPowerService";
     //DatabaseReference db = FirebaseDatabase.getInstance().getReference("/gujarat/amreli/bagasara/somnath/power");
     NotificationManagerCompat notificationManager;
-
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
-        notificationManager =  NotificationManagerCompat.from(this);
+        notificationManager = NotificationManagerCompat.from(this);
         notificationManager.cancelAll();
         String notificationId = remoteMessage.getNotification().getChannelId();
         Intent intent = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -43,7 +39,7 @@ public class GPowerService extends FirebaseMessagingService {
                     .setContentText(remoteMessage.getNotification().getBody())
                     .setContentIntent(pendingIntent);
             notificationManager.notify(1, powerOnNotification.build());
-           // alert();
+            alert(remoteMessage);
         } else if (notificationId.equals("power_off")) {
             NotificationCompat.Builder powerOffNotification = new NotificationCompat.Builder(this, "power_off")
                     .setSmallIcon(R.drawable.ic_app)
@@ -55,7 +51,7 @@ public class GPowerService extends FirebaseMessagingService {
                     .setContentText(remoteMessage.getNotification().getBody())
                     .setContentIntent(pendingIntent);
             notificationManager.notify(2, powerOffNotification.build());
-
+            alert(remoteMessage);
         } else if (notificationId.equals("message")) {
             NotificationCompat.Builder messageNotification = new NotificationCompat.Builder(this, "message")
                     .setSmallIcon(R.drawable.ic_app)
@@ -85,10 +81,16 @@ public class GPowerService extends FirebaseMessagingService {
 
     }
 
-    private void alert() {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, AlertActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 50, pendingIntent);
+    private void alert(RemoteMessage remoteMessage) {
+//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        Intent intent = new Intent(this, AlertActivity.class);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+//        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 50, pendingIntent);
+        // Display the notification as a heads-up notification.
+
+        Intent intent = new Intent(getApplicationContext(), AlertActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+
     }
 }

@@ -52,8 +52,8 @@ public class SettingsActivity extends AppCompatActivity {
         powerOffSelectedRingtone = findViewById(R.id.power_off_selected_ringtone);
 
 
-        onSound1 = soundPool.load(SettingsActivity.this, R.raw.water_drains_in_pipe, 1);
-        onSound2 = soundPool.load(SettingsActivity.this,R.raw.water_drains_in_pipe,1);
+        //onSound1 = soundPool.load(SettingsActivity.this, R.raw.water_drains_in_pipe, 1);
+        //onSound2 = soundPool.load(SettingsActivity.this,R.raw.water_drains_in_pipe,1);
 
         sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
         switchPGVCLMessage.setChecked(sharedPreferences.getBoolean("pgvcl_message", false));

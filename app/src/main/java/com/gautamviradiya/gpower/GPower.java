@@ -35,7 +35,7 @@ public class GPower extends Application {
             powerOn.setDescription("notify when power ON");
             powerOn.enableLights(true);
             powerOn.setLightColor(Color.GREEN);
-            powerOn.setSound(Settings.System.DEFAULT_RINGTONE_URI, audioAttributes);
+//            powerOn.setSound(Settings.System.DEFAULT_RINGTONE_URI, audioAttributes);
             notificationManager.createNotificationChannel(powerOn);
 
             NotificationChannel powerOff = new NotificationChannel("power_off", "Power OFF", NotificationManager.IMPORTANCE_HIGH);
