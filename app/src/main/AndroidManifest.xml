@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
     <uses-permission android:name="android.permission.RECEIVE_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <permission android:name="com.gautamviradiya.gpower.permission.C2D_MESSAGE" android:protectionLevel="signature" />
-    <uses-permission android:name="com.gautamviradiya.gpower.permission.C2D_MESSAGE" />
 
     <application
         android:name=".GPower"
@@ -26,21 +17,25 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="GPower">
+            android:label="GPower"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".SettingsActivity"
             android:label="Settings"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity" />
 
         <activity
             android:name=".AlertActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:showForAllUsers="true"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
@@ -52,25 +47,42 @@
 
         <service
             android:name=".GPowerService"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
 
         <receiver
-            android:name=".FirebaseNotificationReceiver"
-            android:exported="false">
-
+            android:exported="false"
+            android:name=".HomeScreenWidget"
+            android:label="@string/app_name"
+            android:widgetCategory="home_screen">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-
             <meta-data
-                android:name="com.google.firebase.messaging.default_notification_channel_id"
-                android:value="@string/default_notification_channel_id"/>
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_screen_widget" />
         </receiver>
 
+        <receiver
+            android:name=".MyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.gautamviradiya.gpower.UPDATE_WIDGET" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".GPowerService$CustomButtonReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="OK_BUTTON" />
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

@@ -1,16 +1,22 @@
 package com.gautamviradiya.gpower;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.AppOpsManager;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
+import android.net.Uri;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -21,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -33,7 +40,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-public class MainActivity extends AppCompatActivity {
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity
+//        implements  TextToSpeech.OnInitListener
+{
+    private static final int PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 200;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor sharedPreferencesEditor;
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -55,13 +70,20 @@ public class MainActivity extends AppCompatActivity {
         dayNight = findViewById(R.id.day_night);
         boxPowerOn = findViewById(R.id.check_box_power_on);
         boxPowerOff = findViewById(R.id.check_box_power_off);
-        bannerAd = findViewById(R.id.banner_ad);
+//        bannerAd = findViewById(R.id.banner_ad);
+//        //ADs
+//        AdRequest mainBannerAdRequest = new AdRequest.Builder().build();
+//        bannerAd.loadAd(mainBannerAdRequest);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.USE_FULL_SCREEN_INTENT)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.USE_FULL_SCREEN_INTENT},
+                        500);
+            }
+        }
 
-        //ADs
-        AdRequest mainBannerAdRequest = new AdRequest.Builder().build();
-        bannerAd.loadAd(mainBannerAdRequest);
-
-        //textToSpeech = new TextToSpeech(this, this);
+//        textToSpeech = new TextToSpeech(this, this);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
@@ -75,12 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
             }
         }
-        settings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-            }
-        });
+        settings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
 
         //lamp
         db.child("status").addValueEventListener(new ValueEventListener() {
@@ -89,10 +106,10 @@ public class MainActivity extends AppCompatActivity {
                 boolean powerStatus = snapshot.getValue(Boolean.class);
                 if (powerStatus) {
                     lamp.setImageResource(R.drawable.ic_lamp_on);
-                    //textToSpeech.speak("પાવર, ચાલુ", TextToSpeech.QUEUE_FLUSH, null, "");
+//                    textToSpeech.speak("પાવર, ચાલુ", TextToSpeech.QUEUE_FLUSH, null, "");
                 } else {
                     lamp.setImageResource(R.drawable.ic_lamp_off);
-                    //textToSpeech.speak("પાવર, બંધ", TextToSpeech.QUEUE_FLUSH, null, "");
+//                    textToSpeech.speak("પાવર, બંધ", TextToSpeech.QUEUE_FLUSH, null, "");
                 }
             }
 
@@ -124,103 +141,113 @@ public class MainActivity extends AppCompatActivity {
         boxPowerOn.setChecked(sharedPreferences.getBoolean("power_on", false));
         boxPowerOff.setChecked(sharedPreferences.getBoolean("power_off", false));
 
-        boxPowerOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked)
-                    firebaseMessaging.subscribeToTopic("power_on").addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_on", true).apply();
-                            Toast.makeText(MainActivity.this, "Subscribe power ON notification", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_on", false).apply();
-                            buttonView.setChecked(sharedPreferences.getBoolean("power_on", false));
-                            Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                else {
-                    firebaseMessaging.unsubscribeFromTopic("power_on").addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_on", false).apply();
-                            Toast.makeText(MainActivity.this, "Unsubscribed power ON notification", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_on", true).apply();
-                            buttonView.setChecked(sharedPreferences.getBoolean("power_on", false));
-                            Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
+        boxPowerOn.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked)
+                firebaseMessaging.subscribeToTopic("power_on").addOnSuccessListener(aVoid -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_on", true).apply();
+                    Toast.makeText(MainActivity.this, "Subscribe power ON notification", Toast.LENGTH_SHORT).show();
+                }).addOnFailureListener(e -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_on", false).apply();
+                    buttonView.setChecked(sharedPreferences.getBoolean("power_on", false));
+                    Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
+                });
+            else {
+                firebaseMessaging.unsubscribeFromTopic("power_on").addOnSuccessListener(aVoid -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_on", false).apply();
+                    Toast.makeText(MainActivity.this, "Unsubscribed power ON notification", Toast.LENGTH_SHORT).show();
+                }).addOnFailureListener(e -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_on", true).apply();
+                    buttonView.setChecked(sharedPreferences.getBoolean("power_on", false));
+                    Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
+                });
             }
         });
-        boxPowerOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked)
-                    firebaseMessaging.subscribeToTopic("power_off").addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(MainActivity.this, "Subscribe power OFF notification", Toast.LENGTH_SHORT).show();
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_off", true).apply();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_off", false).apply();
-                            buttonView.setChecked(sharedPreferences.getBoolean("power_off", false));
-                            Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                else
-                    firebaseMessaging.unsubscribeFromTopic("power_off").addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_off", false).apply();
-                            Toast.makeText(MainActivity.this, "Unsubscribe power OFF notification", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            sharedPreferencesEditor = sharedPreferences.edit();
-                            sharedPreferencesEditor.putBoolean("power_off", true).apply();
-                            buttonView.setChecked(sharedPreferences.getBoolean("power_off", false));
-                            Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-            }
+
+        boxPowerOff.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked)
+                firebaseMessaging.subscribeToTopic("power_off").addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(MainActivity.this, "Subscribe power OFF notification", Toast.LENGTH_SHORT).show();
+                        sharedPreferencesEditor = sharedPreferences.edit();
+                        sharedPreferencesEditor.putBoolean("power_off", true).apply();
+                    }
+                }).addOnFailureListener(e -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_off", false).apply();
+                    buttonView.setChecked(sharedPreferences.getBoolean("power_off", false));
+                    Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
+                });
+            else
+                firebaseMessaging.unsubscribeFromTopic("power_off").addOnSuccessListener(aVoid -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_off", false).apply();
+                    Toast.makeText(MainActivity.this, "Unsubscribe power OFF notification", Toast.LENGTH_SHORT).show();
+                }).addOnFailureListener(e -> {
+                    sharedPreferencesEditor = sharedPreferences.edit();
+                    sharedPreferencesEditor.putBoolean("power_off", true).apply();
+                    buttonView.setChecked(sharedPreferences.getBoolean("power_off", false));
+                    Toast.makeText(MainActivity.this, "Try after some time", Toast.LENGTH_SHORT).show();
+                });
         });
 
         audioAttributes = new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .setUsage(AudioAttributes.USAGE_ALARM).build();
-    }
 
-}
-
-   /* @Override
-    public void onInit(int status) {
-        if (status == TextToSpeech.SUCCESS) {
-            int result = textToSpeech.setLanguage(new Locale("gu", "IND", "variant"));
-            textToSpeech.setPitch(0.9f);
-            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Toast.makeText(this, "Language not supported", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Toast.makeText(this, "Speak fail", Toast.LENGTH_SHORT).show();
+        Log.d("permission", "onCreate: " + isShowOnLockScreenPermissionEnable());
+        if (Build.MANUFACTURER.equals("Xiaomi") && !isShowOnLockScreenPermissionEnable()) {
+            requestShowOnLockScreenPermission();
         }
     }
-*/
 
+    private Boolean isShowOnLockScreenPermissionEnable() {
+        try {
+            AppOpsManager manager = (AppOpsManager) getSystemService(APP_OPS_SERVICE);
+            Method method = AppOpsManager.class.getDeclaredMethod("checkOpNoThrow",
+                    int.class, int.class, String.class);
+            int result = (int) method.invoke(manager, 10020, Binder.getCallingUid(), getPackageName());
+            return AppOpsManager.MODE_ALLOWED == result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void requestShowOnLockScreenPermission() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permission Required")
+                .setMessage("Please grant 'Show on Lock Screen' and 'Display pop-up window' permissions. so you can easily get notifications.")
+                .setPositiveButton("Grant", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent;
+                            intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
+                            intent.setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity");
+                            intent.putExtra("extra_pkgname", getPackageName());
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+//    @Override
+//    public void onInit(int status) {
+//        if (status == TextToSpeech.SUCCESS) {
+//            int result = textToSpeech.setLanguage(new Locale("gu", "IND", "variant"));
+//            textToSpeech.setPitch(0.9f);
+//            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+//                Toast.makeText(this, "Language not supported", Toast.LENGTH_SHORT).show();
+//            }
+//        } else {
+//            Toast.makeText(this, "Speak fail", Toast.LENGTH_SHORT).show();
+//        }
+//    }
+}

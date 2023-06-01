@@ -4,6 +4,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
+import android.util.Log;
 
 import androidx.legacy.content.WakefulBroadcastReceiver;
 
@@ -13,8 +14,8 @@ public class FirebaseNotificationReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "onReceive: onRecive");
         // Check if the intent contains a notification message
-        if (intent.getExtras() != null && intent.getExtras().containsKey("notification")) {
             // Wake up the device's screen
             PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK
@@ -34,6 +35,5 @@ public class FirebaseNotificationReceiver extends WakefulBroadcastReceiver {
             // Release the wake lock and re-enable the keyguard
             wakeLock.release();
             keyguardLock.reenableKeyguard();
-        }
     }
 }

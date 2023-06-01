@@ -10,6 +10,8 @@ import android.media.SoundPool;
 import android.os.Build;
 import android.provider.Settings;
 
+import androidx.core.app.NotificationCompat;
+
 public class GPower extends Application {
     NotificationManager notificationManager;
     AudioAttributes audioAttributes;
@@ -35,7 +37,8 @@ public class GPower extends Application {
             powerOn.setDescription("notify when power ON");
             powerOn.enableLights(true);
             powerOn.setLightColor(Color.GREEN);
-//            powerOn.setSound(Settings.System.DEFAULT_RINGTONE_URI, audioAttributes);
+            powerOn.setSound(Settings.System.DEFAULT_RINGTONE_URI, audioAttributes);
+            powerOn.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
             notificationManager.createNotificationChannel(powerOn);
 
             NotificationChannel powerOff = new NotificationChannel("power_off", "Power OFF", NotificationManager.IMPORTANCE_HIGH);
@@ -43,6 +46,8 @@ public class GPower extends Application {
             powerOff.enableLights(true);
             powerOff.setDescription("notify when power OFF");
             powerOff.setLightColor(Color.RED);
+            powerOff.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            powerOff.setSound(Settings.System.DEFAULT_RINGTONE_URI, audioAttributes);
             notificationManager.createNotificationChannel(powerOff);
 
             NotificationChannel message = new NotificationChannel("message", "Power Message", NotificationManager.IMPORTANCE_DEFAULT);
@@ -50,11 +55,13 @@ public class GPower extends Application {
             message.enableLights(true);
             message.setLightColor(Color.RED);
             message.setDescription("power related message");
+            message.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
             notificationManager.createNotificationChannel(message);
 
             NotificationChannel weeklyTimeSchedule = new NotificationChannel("time_schedule", "Time schedule", NotificationManager.IMPORTANCE_DEFAULT);
             weeklyTimeSchedule.setShowBadge(true);
             weeklyTimeSchedule.setDescription("weekly time schedule for power on/off");
+            weeklyTimeSchedule.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
             notificationManager.createNotificationChannel(weeklyTimeSchedule);
 
         }
