@@ -11,19 +11,21 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.os.PowerManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import com.gautamviradiya.gpower.utils.PowerManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -31,7 +33,7 @@ public class GPowerService extends FirebaseMessagingService {
     //private static final String TAG = "GPowerService";
     //DatabaseReference db = FirebaseDatabase.getInstance().getReference("/gujarat/amreli/bagasara/somnath/power");
     NotificationManagerCompat notificationManager;
-    private static final String TAG = FirebaseNotificationReceiver.class.getSimpleName();
+
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
@@ -39,7 +41,7 @@ public class GPowerService extends FirebaseMessagingService {
         notificationManager.cancelAll();
         String notificationId = remoteMessage.getData().get("id");
 //        String[] time = Objects.requireNonNull(remoteMessage.getData().get("body")).split(" ");
-//        Log.d(TAG, "onMessageReceived: " + Arrays.toString(time));
+        Log.d("Firebase FCM", "onMessageReceived: ");
         // Create the custom button intent
         Intent intent = new Intent(this, AlertActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK )
@@ -57,6 +59,7 @@ public class GPowerService extends FirebaseMessagingService {
         customLayout.setTextViewText(R.id.notification_subtitle,remoteMessage.getData().get("body") );
 
         if (notificationId.equals("power_on")) {
+
             customLayout.setImageViewResource(R.id.notification_lamp,R.drawable.ic_lamp_on );
             long[] pattern = {500,500,500,500,500};
             NotificationCompat.Builder powerOnNotification = new NotificationCompat.Builder(this, "power_on")
@@ -78,6 +81,7 @@ public class GPowerService extends FirebaseMessagingService {
             notificationManager.notify(1, powerOnNotification.build());
 //            alert(remoteMessage);
         } else if (notificationId.equals("power_off")) {
+
             customLayout.setImageViewResource(R.id.notification_lamp,R.drawable.ic_lamp_red );
             NotificationCompat.Builder powerOffNotification = new NotificationCompat.Builder(this, "power_off")
                     .setSmallIcon(R.drawable.ic_app)
@@ -132,41 +136,7 @@ public class GPowerService extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(@NonNull String s) {
-        Log.d(TAG, "onNewToken: " + s);
-    }
-
-    private void alert(RemoteMessage remoteMessage) {
-        Log.d("onRecive Activity", "FCM: onAlert");
-
-        Intent activityIntent = new Intent(this, AlertActivity.class);
-        activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(activityIntent);
-
-//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//        Intent intent = new Intent(this, AlertActivity.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-//        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0, pendingIntent);
-
-
-//        // Wake up the device's screen
-//        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-//        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK
-//                | PowerManager.ACQUIRE_CAUSES_WAKEUP, "GPowerService:wakeLock");
-//        wakeLock.acquire();
-//
-//        // Disable the keyguard
-//        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock(TAG);
-//        keyguardLock.disableKeyguard();
-//
-//        // Launch the MyActivity
-//        Intent activityIntent = new Intent(this, AlertActivity.class);
-//        activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        startActivity(activityIntent);
-//
-//        // Release the wake lock and re-enable the keyguard
-//        wakeLock.release();
-//        keyguardLock.reenableKeyguard();
+        Log.d("FCM", "onNewToken: " + s);
     }
 
     public static class CustomButtonReceiver extends BroadcastReceiver {
@@ -178,4 +148,13 @@ public class GPowerService extends FirebaseMessagingService {
             }
         }
     }
+
+    private void alert(RemoteMessage remoteMessage) {
+        Log.d("onRecive Activity", "FCM: onAlert");
+
+        Intent activityIntent = new Intent(this, AlertActivity.class);
+        activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(activityIntent);
+    }
+
 }

@@ -43,7 +43,10 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
 //        implements  TextToSpeech.OnInitListener
@@ -53,9 +56,10 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences.Editor sharedPreferencesEditor;
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     FirebaseMessaging firebaseMessaging = FirebaseMessaging.getInstance();
-    DatabaseReference db = firebaseDatabase.getReference("/gujarat/amreli/bagasara/somnath/power");
+    public DatabaseReference db = firebaseDatabase.getReference("/gujarat/amreli/bagasara/somnath/power");
     private ImageView lamp, dayNight, settings;
     private TextToSpeech textToSpeech;
+    PowerClock powerClock;
     private CheckBox boxPowerOn, boxPowerOff;
     private NotificationManager notificationManager;
     private AudioAttributes audioAttributes;
@@ -66,6 +70,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         settings = findViewById(R.id.settings);
+        powerClock = findViewById(R.id.power_clock);
         lamp = findViewById(R.id.lamp);
         dayNight = findViewById(R.id.day_night);
         boxPowerOn = findViewById(R.id.check_box_power_on);
@@ -99,6 +104,46 @@ public class MainActivity extends AppCompatActivity
         }
         settings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
 
+        db.child("on_off").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<MainActivity.OnOffData> onOffList = new ArrayList<>();
+                for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                    MainActivity.OnOffData onOffData = childSnapshot.getValue(MainActivity.OnOffData.class);
+                    onOffList.add(onOffData);
+                }
+                powerClock.setOnOffList(onOffList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Handle any errors
+                // ...
+            }
+        });
+
+        db.child("startTime").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                powerClock.setPowerStartTime(snapshot.getValue(String.class));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        db.child("endTime").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                powerClock.setPowerEndTime(snapshot.getValue(String.class));
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        
         //lamp
         db.child("status").addValueEventListener(new ValueEventListener() {
             @Override
@@ -106,9 +151,11 @@ public class MainActivity extends AppCompatActivity
                 boolean powerStatus = snapshot.getValue(Boolean.class);
                 if (powerStatus) {
                     lamp.setImageResource(R.drawable.ic_lamp_on);
+                    powerClock.setPowerStatus(true);
 //                    textToSpeech.speak("પાવર, ચાલુ", TextToSpeech.QUEUE_FLUSH, null, "");
                 } else {
                     lamp.setImageResource(R.drawable.ic_lamp_off);
+                    powerClock.setPowerStatus(false);
 //                    textToSpeech.speak("પાવર, બંધ", TextToSpeech.QUEUE_FLUSH, null, "");
                 }
             }
@@ -250,4 +297,42 @@ public class MainActivity extends AppCompatActivity
 //            Toast.makeText(this, "Speak fail", Toast.LENGTH_SHORT).show();
 //        }
 //    }
+
+    static class OnOffData {
+        private String e=""; // End time
+        private String s=""; // Start time
+
+        // Default constructor (required for Firebase deserialization)
+        public OnOffData() {
+        }
+
+        // Constructor with parameters
+        public OnOffData(String s, String e) {
+            this.e = e;
+            this.s = s;
+        }
+        public OnOffData(String s) {
+            this.s = s;
+        }
+
+
+
+        // Getters and setters for the fields
+        public String getE() {
+            return e;
+        }
+
+        public void setE(String e) {
+            this.e = e;
+        }
+
+        public String getS() {
+            return s;
+        }
+
+        public void setS(String s) {
+            this.s = s;
+        }
+    }
+
 }
