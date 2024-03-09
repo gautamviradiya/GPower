@@ -10,4 +10,6 @@
     <string name="when_power_off">પાવર જાય ત્યારે</string>
     <string name="settings">સેટિંગ્સ</string>
     <string name="default_notification_channel_id">message</string>
+    <string name="supplied_power">પાવર સપ્લાય</string>
+    <string name="hours">કલાક</string>
 </resources>

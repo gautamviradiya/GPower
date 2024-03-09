@@ -1,26 +1,27 @@
 package com.gautamviradiya.gpower;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
-import android.view.View;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,9 +30,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -40,13 +39,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Locale;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
 //        implements  TextToSpeech.OnInitListener
@@ -60,21 +58,37 @@ public class MainActivity extends AppCompatActivity
     private ImageView lamp, dayNight, settings;
     private TextToSpeech textToSpeech;
     PowerClock powerClock;
+    TextView totalPowerSupplied;
+    TextView totalPowerRemaining;
     private CheckBox boxPowerOn, boxPowerOff;
     private NotificationManager notificationManager;
     private AudioAttributes audioAttributes;
     private AdView bannerAd;
-
+    private String powerEndTime = "";
+    private String powerStartTime = "";
+    ArrayList<MainActivity.OnOffData> onOffList = new ArrayList<>();
+    private BroadcastReceiver systemClockBR;
+    private IntentFilter systemIntentFilter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        settings = findViewById(R.id.settings);
-        powerClock = findViewById(R.id.power_clock);
-        lamp = findViewById(R.id.lamp);
-        dayNight = findViewById(R.id.day_night);
-        boxPowerOn = findViewById(R.id.check_box_power_on);
-        boxPowerOff = findViewById(R.id.check_box_power_off);
+        initUI();
+        systemClockBR = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Handle the received broadcast
+                if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
+                    // Perform your desired logic here when the system minute changes
+                    calculateTotalPowerCutAndLeft();
+                }
+            }
+        };
+
+        // Initialize the intent filter
+        systemIntentFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        registerReceiver(systemClockBR, systemIntentFilter);
+
 //        bannerAd = findViewById(R.id.banner_ad);
 //        //ADs
 //        AdRequest mainBannerAdRequest = new AdRequest.Builder().build();
@@ -104,46 +118,48 @@ public class MainActivity extends AppCompatActivity
         }
         settings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
 
-        db.child("on_off").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ArrayList<MainActivity.OnOffData> onOffList = new ArrayList<>();
-                for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
-                    MainActivity.OnOffData onOffData = childSnapshot.getValue(MainActivity.OnOffData.class);
-                    onOffList.add(onOffData);
-                }
-                powerClock.setOnOffList(onOffList);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Handle any errors
-                // ...
-            }
-        });
-
-        db.child("startTime").addListenerForSingleValueEvent(new ValueEventListener() {
+        db.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                powerClock.setPowerStartTime(snapshot.getValue(String.class));
+                powerStartTime = snapshot.child("startTime").getValue(String.class);
+                powerEndTime = snapshot.child("endTime").getValue(String.class);
+                powerClock.setPowerStartTime(powerStartTime);
+                powerClock.setPowerEndTime(powerEndTime);
+
+                //day or night
+                boolean day = snapshot.child("day").getValue(Boolean.class);
+                if (day) {
+                    dayNight.setImageResource(R.drawable.ic_day);
+                } else dayNight.setImageResource(R.drawable.ic_night);
+
+                powerClock.setTotalPowerSupplyAngle(getTotalPowerSupply()*30.0f);
+
+                db.child("on_off").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        onOffList.clear();
+                        for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                            MainActivity.OnOffData onOffData = childSnapshot.getValue(MainActivity.OnOffData.class);
+                            onOffList.add(onOffData);
+                        }
+                        calculateTotalPowerCutAndLeft();
+                        powerClock.setOnOffList(onOffList);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        // Handle any errors
+                        // ...
+                    }
+                });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                // Handle the error
             }
         });
-        db.child("endTime").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                powerClock.setPowerEndTime(snapshot.getValue(String.class));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
-        
         //lamp
         db.child("status").addValueEventListener(new ValueEventListener() {
             @Override
@@ -166,28 +182,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        //day or night
-        db.child("day").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                boolean day = snapshot.getValue(Boolean.class);
-                if (day) {
-                    dayNight.setImageResource(R.drawable.ic_day);
-                } else dayNight.setImageResource(R.drawable.ic_night);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
         //checkBox
         sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE);
-
         boxPowerOn.setChecked(sharedPreferences.getBoolean("power_on", false));
         boxPowerOff.setChecked(sharedPreferences.getBoolean("power_off", false));
-
         boxPowerOn.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked)
                 firebaseMessaging.subscribeToTopic("power_on").addOnSuccessListener(aVoid -> {
@@ -213,7 +211,6 @@ public class MainActivity extends AppCompatActivity
                 });
             }
         });
-
         boxPowerOff.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked)
                 firebaseMessaging.subscribeToTopic("power_off").addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -245,10 +242,72 @@ public class MainActivity extends AppCompatActivity
         audioAttributes = new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .setUsage(AudioAttributes.USAGE_ALARM).build();
 
+
         Log.d("permission", "onCreate: " + isShowOnLockScreenPermissionEnable());
         if (Build.MANUFACTURER.equals("Xiaomi") && !isShowOnLockScreenPermissionEnable()) {
             requestShowOnLockScreenPermission();
         }
+    }
+
+    private void initUI() {
+        settings = findViewById(R.id.settings);
+        powerClock = findViewById(R.id.power_clock);
+        lamp = findViewById(R.id.lamp);
+        dayNight = findViewById(R.id.day_night);
+        boxPowerOn = findViewById(R.id.check_box_power_on);
+        boxPowerOff = findViewById(R.id.check_box_power_off);
+        totalPowerSupplied = findViewById(R.id.supplied_power);
+        totalPowerRemaining = findViewById(R.id.remaining_power);
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void calculateTotalPowerCutAndLeft() {
+        float totalOnAngle = 0.0f;
+
+        for (MainActivity.OnOffData onOffData : onOffList) {
+            String startTime = onOffData.getS();
+            String endTime;
+            if (onOffData.getE().equals("")) {
+                endTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            } else {
+                endTime = onOffData.getE();
+            }
+
+            float startAngle = calculateAngle(startTime);
+            float endAngle = calculateAngle(endTime);
+
+            float onAngle = endAngle - startAngle;
+            totalOnAngle += onAngle;
+        }
+
+        float totalOnHours = (totalOnAngle / 30.0f); // Convert angle to hours
+        int hours = (int) (totalOnHours % 12);
+        int minutes = (int) ((totalOnAngle % 30.0f) * 2); // Convert total on angle to minutes
+
+
+        String totalOnTime = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes);
+        totalPowerSupplied.setText(totalOnTime + " " + getResources().getString(R.string.hours));
+
+//        if(hours>=getTotalPowerSupply()){
+//            totalPowerRemaining.setText("00:00" + " " + getResources().getString(R.string.hours));
+//            return;
+//        }
+
+        int totalRemainingHours = (int) (getTotalPowerSupply() - (totalOnHours % 8));
+        int totalRemainingMinutes = (int) ((getTotalPowerSupply() * 60 - totalOnAngle) % 30.0f * 2); // Calculate remaining power cut minutes
+        String totalRemainingTime = String.format(Locale.getDefault(), "%02d:%02d", totalRemainingHours, totalRemainingMinutes);
+        totalPowerRemaining.setText(totalRemainingTime + " " + getResources().getString(R.string.hours));
+
+    }
+
+    public float getTotalPowerSupply() {
+        LocalTime start = LocalTime.parse(powerStartTime);
+        LocalTime end = LocalTime.parse(powerEndTime);
+
+        Duration duration = Duration.between(start, end);
+        float hours = duration.toHours();
+//        long minutes = duration.toMinutes() % 60;
+        return hours;
     }
 
     private Boolean isShowOnLockScreenPermissionEnable() {
@@ -270,9 +329,9 @@ public class MainActivity extends AppCompatActivity
                 .setPositiveButton("Grant", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Intent intent;
-                            intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
-                            intent.setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity");
-                            intent.putExtra("extra_pkgname", getPackageName());
+                        intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
+                        intent.setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity");
+                        intent.putExtra("extra_pkgname", getPackageName());
                         startActivity(intent);
                     }
                 })
@@ -284,7 +343,6 @@ public class MainActivity extends AppCompatActivity
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-
 //    @Override
 //    public void onInit(int status) {
 //        if (status == TextToSpeech.SUCCESS) {
@@ -299,8 +357,8 @@ public class MainActivity extends AppCompatActivity
 //    }
 
     static class OnOffData {
-        private String e=""; // End time
-        private String s=""; // Start time
+        private String e = ""; // End time
+        private String s = ""; // Start time
 
         // Default constructor (required for Firebase deserialization)
         public OnOffData() {
@@ -311,10 +369,10 @@ public class MainActivity extends AppCompatActivity
             this.e = e;
             this.s = s;
         }
+
         public OnOffData(String s) {
             this.s = s;
         }
-
 
 
         // Getters and setters for the fields
@@ -335,4 +393,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private float calculateAngle(String time) {
+        String[] parts = time.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+        return (hour * 30) + (minute * 0.5f) - 90;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(systemClockBR);
+    }
 }

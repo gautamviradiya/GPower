@@ -42,6 +42,8 @@ public class PowerClock extends View {
     Paint minuteHandPaint = new Paint();
     Paint hourHandPaint = new Paint();
     Paint eightHourPaint = new Paint();
+
+    Paint currentTimePaint = new Paint();
     Paint powerOffHourPaint = new Paint();
     Paint powerOnHourPaint = new Paint();
 
@@ -50,7 +52,10 @@ public class PowerClock extends View {
     String powerEndTime = "12:00";
 
     ArrayList<MainActivity.OnOffData> onOffList = new ArrayList<>();
-    public void setOnOffList(ArrayList<MainActivity.OnOffData> onOff){
+
+    private float totalPowerSupplyAngle=0f;
+
+    public void setOnOffList(ArrayList<MainActivity.OnOffData> onOff) {
         this.onOffList = onOff;
     }
 
@@ -85,23 +90,27 @@ public class PowerClock extends View {
         //8 hour arc
         eightHourPaint.setAntiAlias(true);
         eightHourPaint.setStrokeWidth(16);
-        eightHourPaint.setColor(Color.parseColor("#BEBEBE"));
-        eightHourPaint.setStrokeCap(Paint.Cap.ROUND);
+        eightHourPaint.setColor(Color.parseColor("#f0f0f0"));
+//        eightHourPaint.setStrokeCap(Paint.Cap.ROUND);
         eightHourPaint.setStyle(Paint.Style.STROKE);
 
         //power off arc
         powerOffHourPaint.setAntiAlias(true);
         powerOffHourPaint.setStrokeWidth(16);
-        powerOffHourPaint.setColor(Color.parseColor("#FF0000"));
-        powerOffHourPaint.setStrokeCap(Paint.Cap.ROUND);
+        powerOffHourPaint.setColor(Color.parseColor("#fd7676"));
         powerOffHourPaint.setStyle(Paint.Style.STROKE);
 
         //Power on arc
         powerOnHourPaint.setAntiAlias(true);
         powerOnHourPaint.setStrokeWidth(16);
-        powerOnHourPaint.setColor(Color.parseColor("#00FF00"));
+        powerOnHourPaint.setColor(Color.parseColor("#77C94B"));
         powerOnHourPaint.setStyle(Paint.Style.STROKE);
 
+        //Current Time round
+        currentTimePaint.setAntiAlias(true);
+        currentTimePaint.setStrokeWidth(30);
+        currentTimePaint.setStrokeCap(Paint.Cap.ROUND);
+        currentTimePaint.setStyle(Paint.Style.STROKE);
     }
 
     @Override
@@ -129,10 +138,13 @@ public class PowerClock extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawHands(canvas);
+        float startTimeAngle = calculateAngle(powerStartTime);
+        float currentTimeAngle = calculateAngle(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+
         canvas.drawCircle(centerX, centerY, 7, clockCenter);
-        drawEightHourArc(canvas,calculateAngle(powerStartTime));
-        canvas.drawArc(outerArc,calculateAngle(powerStartTime),
-                calculateAngle(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))) - calculateAngle(powerStartTime),false,powerOffHourPaint);
+        drawEightHourArc(canvas, startTimeAngle, startTimeAngle,currentTimeAngle);
+        canvas.drawArc(outerArc, startTimeAngle,
+                currentTimeAngle - calculateAngle(powerStartTime), false, powerOffHourPaint);
 
         for (MainActivity.OnOffData onOffData : onOffList) {
             String startTime = onOffData.getS();
@@ -150,11 +162,37 @@ public class PowerClock extends View {
             // Draw the arc on the canvas
             canvas.drawArc(outerArc, startAngle, endAngle - startAngle, false, powerOnHourPaint);
         }
+
+        //current time point
+        canvas.drawArc(outerArc, currentTimeAngle, 0.1f, false, currentTimePaint);
         postInvalidateDelayed(500);
     }
-    private void drawEightHourArc(Canvas canvas, float startAngle) {
-        canvas.drawArc(outerArc, startAngle, 240, false, eightHourPaint);
+
+    private void drawEightHourArc(Canvas canvas, float startAngle,float startTimeAngle, float currentTimeAngle) {
+        float eightHourAngle = totalPowerSupplyAngle; // Initial 8-hour angle
+        float totalOnAngle = 0f; // Total duration of power on intervals
+
+        // Calculate the total duration of power on intervals in the onOffList
+        for (MainActivity.OnOffData onOffData : onOffList) {
+            String startTime = onOffData.getS();
+            String endTime;
+            if (onOffData.getE().equals("")) {
+                endTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            } else {
+                endTime = onOffData.getE();
+            }
+
+            float start = calculateAngle(startTime);
+            float end = calculateAngle(endTime);
+            totalOnAngle += end - start;
+        }
+
+                // Calculate the total duration of power off angle
+        float totalOffAngle = currentTimeAngle - startTimeAngle - totalOnAngle;
+        float sweepAngle = eightHourAngle + totalOffAngle;
+        canvas.drawArc(outerArc, startAngle, sweepAngle, false, eightHourPaint);
     }
+
     private float calculateAngle(String time) {
         String[] parts = time.split(":");
         int hour = Integer.parseInt(parts[0]);
@@ -193,12 +231,24 @@ public class PowerClock extends View {
 
     public void setPowerStatus(boolean powerStatus) {
         this.powerStatus = powerStatus;
+        if (powerStatus) {
+            currentTimePaint.setColor(Color.parseColor("#77C94B"));
+            currentTimePaint.setShadowLayer(40, 0, 0, Color.GREEN);
+        } else {
+            currentTimePaint.setColor(Color.parseColor("#fd7676"));
+            currentTimePaint.setShadowLayer(40, 0, 0, Color.RED);
+        }
         invalidate(); // Redraw the clock when the power status changes
     }
+
     public void setPowerStartTime(String powerStartTime) {
         this.powerStartTime = powerStartTime;
     }
+
     public void setPowerEndTime(String powerEndTime) {
         this.powerEndTime = powerEndTime;
+    }
+    public void setTotalPowerSupplyAngle(float totalPowerSupplyAngle) {
+        this.totalPowerSupplyAngle = totalPowerSupplyAngle;
     }
 }
