@@ -1,4 +1,4 @@
-package com.gautamviradiya.gpower;
+package gautam.viradiya.gpower;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;

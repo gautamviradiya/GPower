@@ -1,4 +1,4 @@
-package com.gautamviradiya.gpower;
+package gautam.viradiya.gpower;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+
 
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -122,6 +123,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 powerStartTime = snapshot.child("startTime").getValue(String.class);
+                Log.d("GPOWER", "onDataChange: singleValue" + powerStartTime);
                 powerEndTime = snapshot.child("endTime").getValue(String.class);
                 powerClock.setPowerStartTime(powerStartTime);
                 powerClock.setPowerEndTime(powerEndTime);

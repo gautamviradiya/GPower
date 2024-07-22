@@ -1,33 +1,20 @@
-package com.gautamviradiya.gpower;
+package gautam.viradiya.gpower;
 
-import android.app.AlarmManager;
-import android.app.KeyguardManager;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 
-import com.gautamviradiya.gpower.utils.PowerManager;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Objects;
 
 public class GPowerService extends FirebaseMessagingService {
     //private static final String TAG = "GPowerService";
@@ -59,7 +46,6 @@ public class GPowerService extends FirebaseMessagingService {
         customLayout.setTextViewText(R.id.notification_subtitle,remoteMessage.getData().get("body") );
 
         if (notificationId.equals("power_on")) {
-
             customLayout.setImageViewResource(R.id.notification_lamp,R.drawable.ic_lamp_on );
             long[] pattern = {500,500,500,500,500};
             NotificationCompat.Builder powerOnNotification = new NotificationCompat.Builder(this, "power_on")

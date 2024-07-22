@@ -1,4 +1,4 @@
-package com.gautamviradiya.gpower;
+package gautam.viradiya.gpower;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;

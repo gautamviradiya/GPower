@@ -1,9 +1,8 @@
-package com.gautamviradiya.gpower;
+package gautam.viradiya.gpower;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.view.View;

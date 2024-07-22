@@ -1,10 +1,6 @@
-package com.gautamviradiya.gpower.utils;
+package gautam.viradiya.gpower.utils;
 
-import android.os.Build;
-
-import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.time.*;
 
 
 public class PowerManager {

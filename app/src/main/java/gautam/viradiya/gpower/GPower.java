@@ -1,4 +1,4 @@
-package com.gautamviradiya.gpower;
+package gautam.viradiya.gpower;
 
 import android.app.Application;
 import android.app.NotificationChannel;
