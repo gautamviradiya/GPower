@@ -19,7 +19,7 @@ public class MyReceiver extends BroadcastReceiver {
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, HomeScreenWidget.class));
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_home_screen);
 
-        views.setTextViewText(R.id.home, myData);
+//        views.setTextViewText(R.id.home, myData);
 
         appWidgetManager.updateAppWidget(appWidgetIds, views);
     }
